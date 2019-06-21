@@ -11,7 +11,6 @@ namespace HXC\Admin;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
-use think\db\Query;
 use think\Exception;
 use think\exception\DbException;
 use think\Request;
@@ -23,7 +22,6 @@ use think\Validate;
  * Trait curd
  * @package app\admin\library\hxc
  * @property $countField
- * @method Query indexQuery(Query $sql)
  */
 trait curd
 {
