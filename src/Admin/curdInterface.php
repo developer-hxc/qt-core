@@ -2,7 +2,6 @@
 
 namespace HXC\Admin;
 
-use think\db\Query;
 
 interface curdInterface
 {
@@ -11,7 +10,7 @@ interface curdInterface
      * @param $sql 当前查询sql语句
      * @return mixed
      */
-    public function indexQuery(Query $sql);
+    public function indexQuery($sql);
 
     /**
      * 输出到列表视图的数据捕获
