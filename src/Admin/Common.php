@@ -2,8 +2,6 @@
 
 namespace HXC\Admin;
 
-use think\db\Query;
-
 trait Common
 {
     /**
@@ -11,7 +9,7 @@ trait Common
      * @param $sql
      * @return mixed
      */
-    public function indexQuery(Query $sql)
+    public function indexQuery($sql)
     {
         return $sql;
     }
