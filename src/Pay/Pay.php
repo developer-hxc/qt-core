@@ -61,41 +61,6 @@ trait Pay
         }
     }
 
-    /**
-     * 获取订单
-     * @param $type
-     * @return array
-     */
-    public function getOrder($type)
-    {
-        /**
-         * 实现你自己的逻辑
-         */
-        $order_sn = time();//订单号，此处为举例子，需自己实现
-        $total = 0.01;//单位：元
-
-        if($type === 'wechat'){//微信支付
-            $order = [
-                'out_trade_no' => $order_sn,
-                'total_fee' => bcmul($total,100), //单位：分
-                'body' => 'test body - 测试',
-                'openid' => 'oydxwwjsGw-eJKDZbywFkbHO1O0w',
-            ];
-        }elseif($type === 'alipay'){//支付宝支付
-            $order = [
-                'out_trade_no' => $order_sn,
-                'total_amount' => $total, //单位：元
-                'subject' => 'test subject - 测试',
-                'http_method'  => 'GET'
-            ];
-        }else{//开发环境
-            $order = [
-                'id' => 1,
-                'total' => $total
-            ];
-        }
-        return $order;
-    }
 
     /**
      * 获取配置
