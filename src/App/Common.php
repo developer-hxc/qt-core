@@ -72,7 +72,7 @@ trait Common
             'status' => 'fail',
             'msg' => '没有登录'
         ];
-        return json($data);
+        return json_encode($data,JSON_UNESCAPED_UNICODE);
     }
 
     /**
