@@ -211,7 +211,7 @@ trait curd
                 $model = model($this->modelName);
                 $res = $model->allowField(true)->save($add_data);
                 if ($res) {
-                    $addId = $model->id;
+                    $addId = $model->getPk();
                     $addEndRes = $this->addEnd($addId, $add_data);
                     if (is_object($addEndRes)) {
                         if ($this->addTransaction) {
