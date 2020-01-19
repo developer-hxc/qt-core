@@ -174,6 +174,11 @@ trait curd
      */
     protected function getSql($where = [])
     {
+        foreach ($where as $k=>$v) {
+            if (!isset($v[1])) {
+                $where[$k] = $v[0];
+            }
+        }
         $field = implode(',', $this->indexField);
         $relationSearch = Session::get('RelationSearch', $this->modelName);
         if (!empty($relationSearch)) {
