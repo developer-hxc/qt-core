@@ -210,7 +210,7 @@ trait Generate
      * 通过模型定义的关联查询，可以这样定义['name',['memberId'=>['member.nickname','relation']]],只能有一个关联方法被定义为relation，且字段前的表别名必须为关联的方法名
      * @var array
      */
-    protected \$cache = true; //是否开启缓存查询，仅对后台查询生效，通过模型方式进行增，改，删的操作，都会刷新缓存
+    protected \$cache = false; //是否开启缓存查询，仅对后台查询生效，通过模型方式进行增，改，删的操作，都会刷新缓存
     protected \$searchField = [{$searchField}];
     protected \$orderField = '$orderField';  //排序字段
     protected \$pageLimit   = 10;               //分页数
@@ -337,7 +337,7 @@ CODE;
     
     protected \$with = '';//关联关系
     
-    protected \$cache = true;//是否开启缓存查询，仅对前台查询生效，通过模型方式进行增，改，删的操作，都会刷新缓存
+    protected \$cache = false;//是否开启缓存查询，仅对前台查询生效，通过模型方式进行增，改，删的操作，都会刷新缓存
     
     protected \$order = '{$order}';
 
