@@ -162,9 +162,15 @@ trait Auth
     public function logout(Request $request)
     {
         $token = $request->param('token');
+
         if ($token) {//token登录
-            Cache::rm($token);
-            Session::delete('data','auth');
+            if(Cache::has($token)){
+                Cache::rm($token);
+                Session::delete('data','auth');
+            }else{
+                return $this->notLogin();
+            }
+           
         } else {//web登  录
             $data = Session::pull('data','auth');
             Cache::rm($data['token']);
