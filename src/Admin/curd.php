@@ -271,7 +271,7 @@ trait curd
                     Db::startTrans();
                 }
                 $res = model($this->modelName)->allowField(true)->save($edit_data, ['id' => $id]);
-                if ($res) {
+                if ($res !== false) {
                     $editEndRes = $this->editEnd($id, $edit_data);
                     if (is_object($editEndRes)) {
                         if ($this->editTransaction) {
