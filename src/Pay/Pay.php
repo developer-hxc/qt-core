@@ -92,7 +92,7 @@ trait Pay
      */
     public function WXNotify()
     {
-        $pay = Pay::wechat($this->wx_config);
+        $pay = \Yansongda\Pay\Pay::wechat($this->wx_config);
         try {
             $data = $pay->verify();
             $this->notify($data->all(), 'wx');//处理回调
@@ -107,7 +107,7 @@ trait Pay
      */
     public function ALiNotify()
     {
-        $pay = Pay::alipay($this->ali_config);
+        $pay = \Yansongda\Pay\Pay::alipay($this->ali_config);
         try {
             $data = $pay->verify();
             $this->notify($data->all(), 'ali');//处理回调
