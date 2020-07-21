@@ -40,6 +40,7 @@ trait curd
         $only_arr = [];
         $condition = [];
         $where = [];
+        $ignore = [];
         foreach ($this->searchField as $k => $v) {
             if (is_array($v)) {
                 $key = key($v);
@@ -49,6 +50,10 @@ trait curd
                     if ($val[1] == 'select') {
                         $condition[$key] = '';
                     }
+                    if ($val[1] == 'ignore') {
+                        $ignore[] = $key;
+                        continue;
+                    }
                 }
                 $special[$key] = $val;
             } else {
@@ -56,7 +61,7 @@ trait curd
             }
         }
         if ($request->isPost()) {
-            $this->search($request, $request->only($only_arr), $special);
+            $this->search($request, $request->only($only_arr), $special, $ignore);
         }
         $condition['pageSize'] = Session::get('pageSize', $this->modelName) ?: $this->pageLimit;
         $whereData = Session::get('', $this->modelName);
@@ -79,7 +84,9 @@ trait curd
                         if ($v['condition'] == 1) {
                             $where[$v['field'] ?: $k] = $v['val'];
                         } else {
-                            $where[$v['field'] ?: $k] = ['like', "%{$v['val']}%"];
+                            if (!isset($v["ignore"]) || !$v["ignore"]) {
+                                $where[$v['field'] ?: $k] = ['like', "%{$v['val']}%"];
+                            }
                         }
                         $condition[$k] = $v['val'];
                         $condition["{$k}Condition"] = $v['condition'];
@@ -124,7 +131,7 @@ trait curd
      * @param $params
      * @param $special
      */
-    public function search(Request $request, $params, $special)
+    public function search(Request $request, $params, $special, $ignore)
     {
         $page = $request->post('pageSize');
         if ($page) {
@@ -148,19 +155,26 @@ trait curd
                 }
                 $condition[$k] = $v;
                 $condition["{$k}Condition"] = '';
+                if (in_array($k, $ignore)) {
+                    $ignoreFlag = true;
+                } else {
+                    $ignoreFlag = false;
+                }
                 if ($request->post("{$k}Condition") == 1) {//精确查询
                     Session::set($k, [
                         'val' => $v,
                         'condition' => 1,
                         'field' => $field,
-                        'type' => $type
+                        'type' => $type,
+                        'ignore' => $ignoreFlag
                     ], $this->modelName);
                 } else {//模糊查询
                     Session::set($k, [
                         'val' => $v,
                         'condition' => 0,
                         'field' => $field,
-                        'type' => $type
+                        'type' => $type,
+                        'ignore' => $ignoreFlag
                     ], $this->modelName);
                 }
             }
@@ -271,7 +285,7 @@ trait curd
                     Db::startTrans();
                 }
                 $res = model($this->modelName)->allowField(true)->save($edit_data, ['id' => $id]);
-                if ($res) {
+                if ($res !== false) {
                     $editEndRes = $this->editEnd($id, $edit_data);
                     if (is_object($editEndRes)) {
                         if ($this->editTransaction) {
