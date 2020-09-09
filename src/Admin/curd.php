@@ -253,7 +253,7 @@ trait curd
                     if ($this->editTransaction) {
                         Db::rollback();
                     }
-                    return json_err(-1, $exception);
+                    return json_err(-1, $exception->getMessage());
                 }
             }
         } else {
