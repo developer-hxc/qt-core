@@ -224,29 +224,36 @@ trait curd
             if (!$result) {//验证不通过
                 return json_err(-1, $validate->getError());
             } else {//验证通过
-                if ($this->addTransaction) {
-                    Db::startTrans();
-                }
-                $model = model($this->modelName);
-                $res = $model->allowField(true)->save($add_data);
-                if ($res) {
-                    $addId = $model->id;
-                    $addEndRes = $this->addEnd($addId, $add_data);
-                    if (is_object($addEndRes)) {
+                try {
+                    if ($this->addTransaction) {
+                        Db::startTrans();
+                    }
+                    $model = model($this->modelName);
+                    $res = $model->allowField(true)->save($add_data);
+                    if ($res) {
+                        $addId = $model->id;
+                        $addEndRes = $this->addEnd($addId, $add_data);
+                        if (is_object($addEndRes)) {
+                            if ($this->addTransaction) {
+                                Db::rollback();
+                            }
+                            return $addEndRes;
+                        }
+                        if ($this->addTransaction) {
+                            Db::commit();
+                        }
+                        return json_suc();
+                    } else {
                         if ($this->addTransaction) {
                             Db::rollback();
                         }
-                        return $addEndRes;
+                        return json_err();
                     }
-                    if ($this->addTransaction) {
-                        Db::commit();
-                    }
-                    return json_suc();
-                } else {
-                    if ($this->addTransaction) {
+                } catch (\Exception $exception) {
+                    if ($this->editTransaction) {
                         Db::rollback();
                     }
-                    return json_err();
+                    return json_err(-1, $exception);
                 }
             }
         } else {
@@ -281,27 +288,34 @@ trait curd
             if (!$result) {//验证不通过
                 return json_err(-1, $validate->getError());
             } else {//验证通过
-                if ($this->editTransaction) {
-                    Db::startTrans();
-                }
-                $res = model($this->modelName)->allowField(true)->save($edit_data, ['id' => $id]);
-                if ($res !== false) {
-                    $editEndRes = $this->editEnd($id, $edit_data);
-                    if (is_object($editEndRes)) {
+                try {
+                    if ($this->editTransaction) {
+                        Db::startTrans();
+                    }
+                    $res = model($this->modelName)->allowField(true)->save($edit_data, ['id' => $id]);
+                    if ($res !== false) {
+                        $editEndRes = $this->editEnd($id, $edit_data);
+                        if (is_object($editEndRes)) {
+                            if ($this->editTransaction) {
+                                Db::rollback();
+                            }
+                            return $editEndRes;
+                        }
+                        if ($this->editTransaction) {
+                            Db::commit();
+                        }
+                        return json_suc();
+                    } else {
                         if ($this->editTransaction) {
                             Db::rollback();
                         }
-                        return $editEndRes;
+                        return json_err();
                     }
-                    if ($this->editTransaction) {
-                        Db::commit();
-                    }
-                    return json_suc();
-                } else {
+                } catch (\Exception $exception) {
                     if ($this->editTransaction) {
                         Db::rollback();
                     }
-                    return json_err();
+                    return json_err(-1, $exception->getMessage());
                 }
             }
         } else {
@@ -326,27 +340,34 @@ trait curd
         if ($this->deleteTransaction) {
             Db::startTrans();
         }
-        $data = model($this->modelName)->get($id);
-        if (empty($data)) {
-            return json_err();
-        }
-        if ($data->delete()) {
-            $delEndRes = $this->deleteEnd($id);
-            if (is_object($delEndRes)) {
+        try {
+            $data = model($this->modelName)->get($id);
+            if (empty($data)) {
+                return json_err();
+            }
+            if ($data->delete()) {
+                $delEndRes = $this->deleteEnd($id);
+                if (is_object($delEndRes)) {
+                    if ($this->deleteTransaction) {
+                        Db::rollback();
+                    }
+                    return $delEndRes;
+                }
+                if ($this->deleteTransaction) {
+                    Db::commit();
+                }
+                return json_suc();
+            } else {
                 if ($this->deleteTransaction) {
                     Db::rollback();
                 }
-                return $delEndRes;
+                return json_err();
             }
-            if ($this->deleteTransaction) {
-                Db::commit();
-            }
-            return json_suc();
-        } else {
+        } catch (\Exception $exception) {
             if ($this->deleteTransaction) {
                 Db::rollback();
             }
-            return json_err();
+            return json_err(-1, $exception->getMessage());
         }
     }
 }
