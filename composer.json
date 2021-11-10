@@ -1,0 +1,20 @@
+{
+    "name": "hxc/qt-core",
+    "description": "代码生成核心文件",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "韩韩韩",
+            "email": "3365997294@qq.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload":{
+        "psr-4":{
+            "HXC\\":"src/"
+        }
+    },
+    "require": {
+        "yansongda/pay": "~3.0.0"
+    }
+}
