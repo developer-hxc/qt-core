@@ -3,17 +3,24 @@
 namespace HXC\Pay;
 
 use HXC\App\Common;
+
+use Psr\Http\Message\ResponseInterface;
+
+
 use think\Config;
 use think\Loader;
 use think\Log;
 use think\Request;
 
+use Yansongda\Supports\Collection;
+
+
 trait Pay
 {
     use Common;
 
-    private $ali_config;//支付宝配置
-    private $wx_config;//微信配置
+    private $config = [];
+
     private $env;//dev开发环境：不走微信/支付宝支付，直接支付成功；production线上环境：走微信/支付宝支付
     private $func = [
         //微信支付
@@ -53,18 +60,14 @@ trait Pay
             return $this->returnFail($validate->getError());
         }
         if ($this->env === 'dev') {//开发环境
-            $order = $this->getOrder('dev');
+            $order = $this->getOrder($params,'dev');
             $this->notify($order, 'dev');
         } else {//正式环境
             $func = $this->func[$params['type']][$params['func']];
-            $config = ($params['type'] == 'wechat' ? $this->wx_config : $this->ali_config);
-            $order = $this->getOrder($params['type']);
-            $pay = \Yansongda\Pay\Pay::{$params['type']}($config)->{$func}($order);
-            if ($params['type'] == 'wechat') {
-                return $pay;
-            } else {
-                return $pay->send();
-            }
+            $order = $this->getOrder($params);
+            \Yansongda\Pay\Pay::config($this->config);
+            $pay = \Yansongda\Pay\Pay::{$params['type']}()->{$params['func']}($order);
+            return $this->getResponseBody($pay);
         }
     }
 
@@ -73,18 +76,31 @@ trait Pay
      */
     public function getConfig()
     {
-        $request = Request::instance();
-        $domain = $request->domain();
+
         $config = Config::get('pay');
-        $wx_pay_config = getSettings('wx_pay');
-        $ali_pay_config = getSettings('ali_pay');
-        $wx_config = $config['wx'];
-        $ali_config = $config['ali'];
-        $wx_config['notify_url'] = $domain . url('WXNotify');
-        $ali_config['notify_url'] = $domain . url('ALiNotify');
-        $this->wx_config = array_merge($wx_config, $wx_pay_config);
-        $this->ali_config = array_merge($ali_config, $ali_pay_config);
+        $this->config = $config;
         $this->env = $config['env'];
+    }
+
+    private function getResponseBody($pay)
+    {
+        if(is_array($pay)){
+            return $pay;
+        }
+
+        if(!is_object($pay)){
+            throw new \Exception('返回格式不正确');
+        }
+
+        if($pay instanceof \GuzzleHttp\Psr7\Response){
+            return $pay->getBody()->getContents();
+        }
+
+        if($pay instanceof \Yansongda\Supports\Collection){
+            return $pay->all();
+        }
+
+        return $pay;
     }
 
     /**
@@ -92,14 +108,14 @@ trait Pay
      */
     public function WXNotify()
     {
-        $pay = \Yansongda\Pay\Pay::wechat($this->wx_config);
         try {
-            $data = $pay->verify();
-            $this->notify($data->all(), 'wx');//处理回调
+            \Yansongda\Pay\Pay::config($this->config);
+            $result =  \Yansongda\Pay\Pay::wechat()->callback();
+            $this->notify($result->all(), 'wx');//处理回调
         } catch (\Exception $e) {
             Log::record('微信支付回调异常：' . $e->getMessage());
         }
-        return $pay->success()->send();
+        return  \Yansongda\Pay\Pay::wechat()->success();
     }
 
     /**
@@ -107,14 +123,13 @@ trait Pay
      */
     public function ALiNotify()
     {
-        $pay = \Yansongda\Pay\Pay::alipay($this->ali_config);
         try {
-            $data = $pay->verify();
-            $this->notify($data->all(), 'ali');//处理回调
+            \Yansongda\Pay\Pay::config($this->config);
+            $result =  \Yansongda\Pay\Pay::alipay()->callback();
+            $this->notify($result->all(), 'ali');//处理回调
         } catch (\Exception $e) {
             Log::record('支付宝支付回调异常：' . $e->getMessage());
         }
-        return $pay->success()->send();
-
+        return  \Yansongda\Pay\Pay::alipay()->success();
     }
 }

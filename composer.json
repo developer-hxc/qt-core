@@ -13,5 +13,9 @@
         "psr-4":{
             "HXC\\":"src/"
         }
+    },
+    "require": {
+        "yansongda/pay": "~3.0.0"
+
     }
 }
