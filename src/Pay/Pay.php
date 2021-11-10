@@ -3,18 +3,24 @@
 namespace HXC\Pay;
 
 use HXC\App\Common;
+
 use Psr\Http\Message\ResponseInterface;
+
+
 use think\Config;
 use think\Loader;
 use think\Log;
 use think\Request;
+
 use Yansongda\Supports\Collection;
+
 
 trait Pay
 {
     use Common;
 
     private $config = [];
+
     private $env;//dev开发环境：不走微信/支付宝支付，直接支付成功；production线上环境：走微信/支付宝支付
     private $func = [
         //微信支付
@@ -70,6 +76,7 @@ trait Pay
      */
     public function getConfig()
     {
+
         $config = Config::get('pay');
         $this->config = $config;
         $this->env = $config['env'];
@@ -124,6 +131,5 @@ trait Pay
             Log::record('支付宝支付回调异常：' . $e->getMessage());
         }
         return  \Yansongda\Pay\Pay::alipay()->success();
-
     }
 }
