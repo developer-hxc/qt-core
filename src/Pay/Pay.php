@@ -101,14 +101,14 @@ trait Pay
      */
     public function WXNotify()
     {
-        $pay = \Yansongda\Pay\Pay::wechat($this->wx_config);
         try {
-            $data = $pay->verify();
-            $this->notify($data->all(), 'wx');//处理回调
+            \Yansongda\Pay\Pay::config($this->config);
+            $result =  \Yansongda\Pay\Pay::wechat()->callback();
+            $this->notify($result->all(), 'wx');//处理回调
         } catch (\Exception $e) {
             Log::record('微信支付回调异常：' . $e->getMessage());
         }
-        return $pay->success()->send();
+        return  \Yansongda\Pay\Pay::wechat()->success();
     }
 
     /**
@@ -116,14 +116,14 @@ trait Pay
      */
     public function ALiNotify()
     {
-        $pay = \Yansongda\Pay\Pay::alipay($this->ali_config);
         try {
-            $data = $pay->verify();
-            $this->notify($data->all(), 'ali');//处理回调
+            \Yansongda\Pay\Pay::config($this->config);
+            $result =  \Yansongda\Pay\Pay::alipay()->callback();
+            $this->notify($result->all(), 'ali');//处理回调
         } catch (\Exception $e) {
             Log::record('支付宝支付回调异常：' . $e->getMessage());
         }
-        return $pay->success()->send();
+        return  \Yansongda\Pay\Pay::alipay()->success();
 
     }
 }
